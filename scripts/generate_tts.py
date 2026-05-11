@@ -95,18 +95,18 @@ def load_phrase_jobs() -> list[tuple[str, str]]:
     return jobs
 
 
-def load_animal_answer_jobs() -> list[tuple[str, str]]:
+def _load_animals_id_answer_pairs() -> list[tuple[int, str]]:
     text = ANIMALS_PATH.read_text(encoding="utf-8")
     # animals.js dùng key không quote: id: 1, answer: "mèo"
     ids = re.findall(r"\bid\s*:\s*(\d+)", text)
     answers = re.findall(r"\banswer\s*:\s*\"((?:\\.|[^\"\\])*)\"", text)
     if not ids or len(ids) != len(answers):
         raise ValueError("Không parse được animals.js (định dạng đổi?)")
-    jobs: list[tuple[str, str]] = []
+    pairs: list[tuple[int, str]] = []
     for aid, raw in zip(ids, answers):
-        s = bytes(raw, "utf-8").decode("unicode_escape") if "\\" in raw else raw
-        jobs.append((f"animal_{int(aid):02d}_answer", s))
-    return jobs
+        ans = bytes(raw, "utf-8").decode("unicode_escape") if "\\" in raw else raw
+        pairs.append((int(aid), ans))
+    return pairs
 
 
 def load_wrong_reveal_jobs() -> list[tuple[str, str]]:
@@ -115,16 +115,9 @@ def load_wrong_reveal_jobs() -> list[tuple[str, str]]:
     prefix = _extract_js_string_const(phrases, "WRONG_REVEAL_PREFIX").strip()
     prefix = prefix.rstrip(" ,.")
 
-    text = ANIMALS_PATH.read_text(encoding="utf-8")
-    ids = re.findall(r"\bid\s*:\s*(\d+)", text)
-    answers = re.findall(r"\banswer\s*:\s*\"((?:\\.|[^\"\\])*)\"", text)
-    if not ids or len(ids) != len(answers):
-        raise ValueError("Không parse được animals.js (định dạng đổi?)")
-
     jobs: list[tuple[str, str]] = []
-    for aid, raw in zip(ids, answers):
-        ans = bytes(raw, "utf-8").decode("unicode_escape") if "\\" in raw else raw
-        jobs.append((f"wrong_reveal_animal_{int(aid):02d}", f"{prefix} {ans}"))
+    for aid, ans in _load_animals_id_answer_pairs():
+        jobs.append((f"wrong_reveal_animal_{aid:02d}", f"{prefix} {ans}"))
     return jobs
 
 
@@ -134,16 +127,9 @@ def load_timeout_reveal_jobs() -> list[tuple[str, str]]:
     prefix = _extract_js_string_const(phrases, "TIMEOUT_REVEAL_PREFIX").strip()
     prefix = prefix.rstrip(" ,.")
 
-    text = ANIMALS_PATH.read_text(encoding="utf-8")
-    ids = re.findall(r"\bid\s*:\s*(\d+)", text)
-    answers = re.findall(r"\banswer\s*:\s*\"((?:\\.|[^\"\\])*)\"", text)
-    if not ids or len(ids) != len(answers):
-        raise ValueError("Không parse được animals.js (định dạng đổi?)")
-
     jobs: list[tuple[str, str]] = []
-    for aid, raw in zip(ids, answers):
-        ans = bytes(raw, "utf-8").decode("unicode_escape") if "\\" in raw else raw
-        jobs.append((f"timeout_reveal_animal_{int(aid):02d}", f"{prefix} {ans}"))
+    for aid, ans in _load_animals_id_answer_pairs():
+        jobs.append((f"timeout_reveal_animal_{aid:02d}", f"{prefix} {ans}"))
     return jobs
 
 
@@ -253,7 +239,7 @@ def main() -> None:
         if not ANIMALS_PATH.is_file():
             print(f"Không thấy file: {ANIMALS_PATH}", file=sys.stderr)
             sys.exit(1)
-        jobs = jobs + load_animal_answer_jobs() + load_wrong_reveal_jobs() + load_timeout_reveal_jobs()
+        jobs = jobs + load_wrong_reveal_jobs() + load_timeout_reveal_jobs()
 
     if args.backend == "gtts" and gTTS is None:
         print("Thiếu gTTS. Chạy: pip install -r scripts/requirements-tts.txt", file=sys.stderr)

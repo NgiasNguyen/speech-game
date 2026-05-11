@@ -62,12 +62,6 @@ export function GameApp() {
     [playTtsSequence],
   );
 
-  const ttsAnimalAnswerSrc = useMemo(() => {
-    if (!current?.id) return null;
-    const id = String(current.id).padStart(2, "0");
-    return `/sounds/tts/animal_${id}_answer.mp3`;
-  }, [current?.id]);
-
   const ttsWrongRevealCombinedSrc = useMemo(() => {
     if (!current?.id) return null;
     const id = String(current.id).padStart(2, "0");
@@ -123,18 +117,15 @@ export function GameApp() {
         ...h,
         { round: roundIndex + 1, animalId: current.id, answer: current.answer, outcome: "wrong" },
       ]);
-      const srcs = ttsWrongRevealCombinedSrc
-        ? [ttsWrongRevealCombinedSrc]
-        : ttsAnimalAnswerSrc
-          ? ["/sounds/tts/wrong_reveal_prefix.mp3", ttsAnimalAnswerSrc]
-          : [];
-      playTts(srcs, {
-        onDone: () => {
-          setRoundIndex((i) => i + 1);
-          setResult(null);
-          resetText();
-        },
-      });
+      if (ttsWrongRevealCombinedSrc) {
+        playTts([ttsWrongRevealCombinedSrc], {
+          onDone: () => {
+            setRoundIndex((i) => i + 1);
+            setResult(null);
+            resetText();
+          },
+        });
+      }
     },
     [
       current,
@@ -146,7 +137,6 @@ export function GameApp() {
       roundIndex,
       started,
       stop,
-      ttsAnimalAnswerSrc,
       ttsTimeoutRevealCombinedSrc,
       ttsWrongRevealCombinedSrc,
     ],
@@ -205,11 +195,7 @@ export function GameApp() {
         ...h,
         { round: roundIndex + 1, animalId: current.id, answer: current.answer, outcome: "timeout" },
       ]);
-      const srcs = ttsTimeoutRevealCombinedSrc
-        ? [ttsTimeoutRevealCombinedSrc]
-        : ttsAnimalAnswerSrc
-          ? ["/sounds/tts/timeout_reveal_prefix.mp3", ttsAnimalAnswerSrc]
-          : [];
+      const srcs = ttsTimeoutRevealCombinedSrc ? [ttsTimeoutRevealCombinedSrc] : ["/sounds/tts/timeout_reveal_prefix.mp3"];
       playTts(srcs, {
         onDone: () => {
           setRoundIndex((i) => i + 1);
@@ -237,7 +223,6 @@ export function GameApp() {
     stop,
     tick,
     timeLeft,
-    ttsAnimalAnswerSrc,
     ttsTimeoutRevealCombinedSrc,
     ttsWrongRevealCombinedSrc,
   ]);
