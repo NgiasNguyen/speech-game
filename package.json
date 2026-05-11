@@ -7,7 +7,8 @@
     "preview": "vite preview",
     "crop-teacher": "node crop-teacher-sprite.js",
     "remove-teacher-bg": "node remove-teacher-bg.js",
-    "generate:animals": "node scripts/generate-animals.js"
+    "generate:animals": "node scripts/generate-animals.js",
+    "generate:tts": "python3 scripts/generate_tts.py --animals"
   },
   "dependencies": {
     "framer-motion": "^11.15.0",

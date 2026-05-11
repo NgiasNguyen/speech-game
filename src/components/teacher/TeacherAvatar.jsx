@@ -1,17 +1,18 @@
 import { motion } from "framer-motion";
 
 const MOOD_SRC = {
-  idle: "/teacher/idle.png",
-  happy: "/teacher/happy.png",
-  sad: "/teacher/sad.png",
-  talking: "/teacher/talking.png",
+  idle: "/teacher/idle 14.06.36.png",
+  happy: "/teacher/happy 14.06.36.png",
+  sad: "/teacher/sad 14.06.37.png",
+  talking: "/teacher/talk.png",
 };
 
 /**
  * @param {{ mood: keyof typeof MOOD_SRC, alt?: string, className?: string }} props
  */
 export function TeacherAvatar({ mood, alt = "Thầy giáo", className = "" }) {
-  const src = MOOD_SRC[mood] || MOOD_SRC.idle;
+  // Some files have spaces in names; encode for safe URL usage.
+  const src = encodeURI(MOOD_SRC[mood] || MOOD_SRC.idle);
 
   return (
     <motion.div
